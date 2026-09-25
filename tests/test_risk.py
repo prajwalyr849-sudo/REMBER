@@ -132,3 +132,45 @@ def test_severity_threshold_boundaries():
 
     assert engine._severity(84) == "high"
     assert engine._severity(85) == "critical"
+def test_risk_score_never_exceeds_100():
+    engine = RiskEngine()
+
+    detections = [
+        {"class_name": "fire", "confidence": 1.0}
+        for _ in range(20)
+    ]
+
+    result = engine.score(detections)
+
+    assert 0 <= result.score <= 100
+    assert result.score == 100
+
+
+def test_repeated_detections_increase_cumulative_risk():
+    engine = RiskEngine()
+
+    one_detection = engine.score([
+        {"class_name": "person", "confidence": 0.8}
+    ])
+
+    two_detections = engine.score([
+        {"class_name": "person", "confidence": 0.8},
+        {"class_name": "person", "confidence": 0.8},
+    ])
+
+    assert two_detections.score > one_detection.score
+
+
+def test_invalid_custom_weight_is_rejected():
+    with pytest.raises(ValueError):
+        RiskEngine(weights={"fire": 1.5})
+
+
+def test_invalid_threshold_order_is_rejected():
+    with pytest.raises(ValueError):
+        RiskEngine(
+            thresholds={
+                "moderate": 80,
+                "high": 50,
+            }
+        )
