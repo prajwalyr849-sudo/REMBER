@@ -174,3 +174,43 @@ def test_invalid_threshold_order_is_rejected():
                 "high": 50,
             }
         )
+def test_nan_confidence_is_rejected():
+    engine = RiskEngine()
+
+    with pytest.raises(ValueError):
+        engine.score([
+            {"class_name": "person", "confidence": float("nan")}
+        ])
+
+
+def test_infinite_weight_is_rejected():
+    with pytest.raises(ValueError):
+        RiskEngine(weights={"fire": float("inf")})
+
+
+def test_custom_thresholds_change_severity():
+    engine = RiskEngine(
+        thresholds={
+            "low": 10,
+            "moderate": 30,
+            "high": 60,
+            "critical": 90,
+        }
+    )
+
+    assert engine._severity(35) == "moderate"
+    assert engine._severity(60) == "high"
+    assert engine._severity(90) == "critical"
+
+
+def test_bbox_requires_image_dimensions():
+    engine = RiskEngine()
+
+    with pytest.raises(ValueError):
+        engine.score([
+            {
+                "class_name": "person",
+                "confidence": 0.9,
+                "bbox": [0, 0, 50, 50],
+            }
+        ])
