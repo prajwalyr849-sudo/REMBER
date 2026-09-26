@@ -225,3 +225,6 @@ venv/
 
 # Downloaded YOLO model weights
 *.pt
+# YOLO test outputs
+runs/
+bus.jpg
