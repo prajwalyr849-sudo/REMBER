@@ -228,3 +228,20 @@ venv/
 # YOLO test outputs
 runs/
 bus.jpg
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+.venv/
+venv/
+
+# YOLO model weights
+*.pt
+
+# Training outputs
+runs/
+datasets/
+
+# Environment variables
+.env
