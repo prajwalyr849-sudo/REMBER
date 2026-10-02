@@ -1,8 +1,10 @@
+
+
 def calculate_risk(detections, incident_count=0):
     score = 0
 
     for detection in detections:
-        label = detection["label"].lower()
+        label = detection["class_name"].lower()
         confidence = detection["confidence"]
 
         if label in ["fire", "smoke"]:
