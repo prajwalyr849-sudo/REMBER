@@ -1,5 +1,8 @@
+#Runs object detection using camera and YOLO model
+
+
 import cv2
-from ultralytics import YOLO
+from ultralytics import YOLO  #you only look once
 
 MODEL_PATH = "yolov8n.pt"
 
@@ -29,30 +32,43 @@ def  detect_frame(frame,model,confidence=0.35):
             "class_name":model.names[class_id],
             "confidence":round(score,3)
         })
-    return result.plot(),detections
+        accepted_detections = []
+        for detection in detections:
+            if detection["confidence"] > 0.70:
+                accepted_detections.append(detection)
+        
+    return result.plot(),accepted_detections
 
 def main():
-    model = load_model()
+    model = load_model()            #loads YOLO
     print("Model type:",type(model))
-    camera = cv2.VideoCapture(0)
-    if not camera.isOpened():
+    camera = cv2.VideoCapture(0)        #opens default camera
+    if not camera.isOpened():           #checks the status of camera
         print("ERROR!,Could not open webcam")
         return
     print("REMBER AI detection Started")
     print("Press Q to stop")
-
+    frame_count = 0
     try:
         while True:
-            Sucess, frame = camera.read()
+        
+            Sucess, frame = camera.read()        #sucess tells whether frame reads sucessfully , frame contains image data 
+            frame_count += 1           
             if not Sucess:
                 print("Could not read camera frame.")
                 break
-            annotated_frame, detections = detect_frame(frame,model)
-            cv2.imshow("REMBER- AI Detection",annotated_frame)
+            annotated_frame, accepted_detections = detect_frame(frame,model)
+            cv2.imshow("REMBER- AI Detection",annotated_frame)      # displays camera image with detected objects  
+            if frame_count % 30 == 0:
+                
+                risk_result = process_risk(accepted_detections)
+            
+                
+                
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
     finally:
-        camera.release()
-        cv2.destroyAllWindows()
+        camera.release()            #releases camera 
+        cv2.destroyAllWindows()     #closes opencv
 if __name__=="__main__":
     main( )
