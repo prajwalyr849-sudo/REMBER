@@ -1,5 +1,5 @@
 #Runs object detection using camera and YOLO model
-
+from risk_engine.risk_score import calculate_risk
 
 import cv2
 from ultralytics import YOLO  #you only look once
@@ -23,6 +23,7 @@ def  detect_frame(frame,model,confidence=0.35):
     )
     result = results[0]
     detections = []
+    accepted_detections = []
     for box in result.boxes:
         class_id = int(box.cls[0].item())
         score = float(box.conf[0].item())
@@ -32,10 +33,10 @@ def  detect_frame(frame,model,confidence=0.35):
             "class_name":model.names[class_id],
             "confidence":round(score,3)
         })
-        accepted_detections = []
-        for detection in detections:
-            if detection["confidence"] > 0.70:
-                accepted_detections.append(detection)
+    
+    for detection in detections:
+        if detection["confidence"] > 0.70:
+            accepted_detections.append(detection)
         
     return result.plot(),accepted_detections
 
@@ -61,8 +62,8 @@ def main():
             cv2.imshow("REMBER- AI Detection",annotated_frame)      # displays camera image with detected objects  
             if frame_count % 30 == 0:
                 
-                risk_result = process_risk(accepted_detections)
-            
+                risk_result = calculate_risk(accepted_detections)
+                print("RISK RESULT:",risk_result)
                 
                 
             if cv2.waitKey(1) & 0xFF == ord("q"):
